@@ -1,0 +1,100 @@
+<!-- start.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Exam</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #question-container { display: none; }
+        .question { margin-bottom: 20px; }
+        .btn { padding: 10px; background: green; color: white; cursor: pointer; border: none; }
+        .progress { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h2>Select an Exam</h2>
+    <ul id="exam-list"></ul>
+    
+    <div id="question-container">
+        <h3 id="question"></h3>
+        <div id="choices"></div>
+        <button class="btn" onclick="nextQuestion()">Next</button>
+        <div class="progress" id="progress"></div>
+    </div>
+    
+    <div id="result" style="display: none;"></div>
+    
+    <script>
+        let questions = [];
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let startTime;
+        
+        async function loadExams() {
+            const response = await fetch('file_list.json');
+            const data = await response.json();
+            const examList = document.getElementById('exam-list');
+            
+            data.files.forEach(file => {
+                let item = document.createElement('li');
+                item.innerHTML = `<a href="#" onclick="loadExam('${file.url}')">${file.name}</a>`;
+                examList.appendChild(item);
+            });
+        }
+        
+        async function loadExam(url) {
+            const response = await fetch(url);
+            questions = await response.json();
+            document.getElementById('exam-list').style.display = 'none';
+            document.getElementById('question-container').style.display = 'block';
+            startTime = new Date();
+            showQuestion();
+        }
+        
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                endExam();
+                return;
+            }
+            
+            let q = questions[currentQuestion];
+            document.getElementById('question').innerText = q.question;
+            let choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            q.choices.forEach((choice, index) => {
+                let btn = document.createElement('button');
+                btn.innerText = choice;
+                btn.onclick = () => checkAnswer(index);
+                choicesDiv.appendChild(btn);
+            });
+            document.getElementById('progress').innerText = `Question ${currentQuestion + 1} of ${questions.length}`;
+        }
+        
+        function checkAnswer(selected) {
+            if (selected === questions[currentQuestion].answer) correctAnswers++;
+            currentQuestion++;
+            showQuestion();
+        }
+        
+        function endExam() {
+            let endTime = new Date();
+            let timeTaken = Math.round((endTime - startTime) / 1000);
+            let percentage = (correctAnswers / questions.length) * 100;
+            
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').innerHTML = `
+                <h2>Exam Completed!</h2>
+                <p>Grade: ${percentage.toFixed(2)}%</p>
+                <p>Correct: ${correctAnswers} / ${questions.length}</p>
+                <p>Time Taken: ${timeTaken} seconds</p>
+            `;
+        }
+        
+        loadExams();
+    </script>
+</body>
+</html>
