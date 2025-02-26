@@ -158,7 +158,11 @@
 <body>
 
 <!-- Main Question Form -->
-<a href="/" class="home-btn">🏠 Home</a>
+<a id="home-link" class="home-btn">🏠 Home</a>
+
+<script>
+    document.getElementById("home-link").href = location.hostname.includes("github.io") ? "/my-website/" : "/";
+</script>
 
     <h1 class="title">📚 Online Exam System</h1>
 

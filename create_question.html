@@ -182,7 +182,11 @@ select option {
 <body>
 
 <!-- Main Question Form -->
-<a href="/" class="home-btn">🏠 Home</a>
+<a id="home-link" class="home-btn">🏠 Home</a>
+
+<script>
+    document.getElementById("home-link").href = location.hostname.includes("github.io") ? "/my-website/" : "/";
+</script>
 
 <div class="card">
 
