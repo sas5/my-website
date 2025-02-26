@@ -23,7 +23,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 10px;
         }
 
         /* 📦 Modern Glassy Card */
@@ -31,7 +31,7 @@
             background: rgba(30, 30, 40, 0.85);
             backdrop-filter: blur(15px);
             border-radius: 15px;
-            padding: 30px;
+            padding: 15px;
             width: 90%;
             max-width: 600px;
             box-shadow: 0 10px 30px rgba(110, 90, 150, 0.2);
@@ -66,8 +66,8 @@
 
         /* 🟣 Button Hover Effect */
         .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 12px rgba(145, 120, 185, 0.3);
+            /* transform: scale(1.05); */
+            box-shadow: 0 5px 12px rgba(198, 193, 206, 0.443);
         }
 
         /* 🔄 Navigation Buttons */
@@ -101,45 +101,73 @@
             transform: translateY(0);
         }
 
-        /* 🔄 Reload Button Animation */
-        .loading {
-            animation: spin 1s infinite linear;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         /* Hide Elements */
         .hidden { display: none; }
 
         .spinner {
             display: inline-block;
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             border: 2px solid rgba(255, 255, 255, 0.5);
             border-top-color: white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-left: 6px;
+            margin-left: 8px;
+            visibility: hidden; /* Initially hidden */
+        }
+
+        /* 🌀 Show spinner when reloading */
+        .loading .spinner {
+            visibility: visible;
+        }
+
+        /* 🔄 Spinner Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        #next-btn {
+            margin-left: auto;
+        }
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            background: linear-gradient(90deg, #5A5375, #6C5B90);
+            color: white;
+            padding: 12px 18px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .home-btn:hover {
+            background: linear-gradient(90deg, #8A7CA8, #A095C3);
+            box-shadow: 0 5px 12px rgba(198, 193, 206, 0.443);
+        }
     </style>
 </head>
 <body>
+
+<!-- Main Question Form -->
+<a href="/" class="home-btn">🏠 Home</a>
 
     <h1 class="title">📚 Online Exam System</h1>
 
     <div class="card">
         <!-- Reload List Button -->
-        <button id="reload-btn" class="btn mb-4 " onclick="authenticate()">
-            Reload List <span id="reload-spinner" class="spinner hidden"></span>
+        <button id="reload-btn" class="btn mb-4" onclick="authenticate()">
+            Reload List <span id="reload-spinner" class="spinner"></span>
         </button>
+        
         
         <!-- Exam Selection -->
         <div id="exam-list">
@@ -172,303 +200,263 @@
         const WORKER_URL = "https://wandering-fog-6b72.apppps505.workers.dev";
         let reloadBtn = document.getElementById("reload-btn");
         let spinner = document.getElementById("reload-spinner");
-
+    
         async function authenticate() {
             console.log("🔄 Fetching available exams...");
-            
 
-            // Add loading animation
-            reloadBtn.innerHTML = "⏳ Loading...";
-            // reloadBtn.classList.add("loading");
-            spinner.classList.remove("hidden");
-            spinner.classList.add("loading");
-            
-            reloadBtn.disabled = true;        
+            const reloadBtn = document.getElementById("reload-btn");
+            const spinner = document.getElementById("reload-spinner");
 
-            console.log('Fetch');
-            fetch(`${WORKER_URL}/file_list.json`)
+            // Show loading animation & disable button
+            reloadBtn.disabled = true;
+            spinner.style.visibility = "visible";
+
+            console.log("Fetching data...");
+            fetch(WORKER_URL)
                 .then(response => response.json())
                 .then(data => {
                     displayExams(data.files);
-                    reloadBtn.innerHTML = "🔄 Reload List";
-                    // spinner.classList.add("hidden");
-                    reloadBtn.classList.remove("loading");
+                
+                    // Restore button state
                     reloadBtn.disabled = false;
-                    console.log('disaabled');
-
+                    spinner.style.visibility = "hidden";
                 })
                 .catch(error => {
                     alert("Error loading exams.");
-                    reloadBtn.innerHTML = "🔄 Reload List";
-                    // spinner.classList.add("hidden");
-                    reloadBtn.classList.remove("loading");
                     reloadBtn.disabled = false;
+                    spinner.style.visibility = "hidden";
                 });
-
-        }   
-
+        }
+    
         function displayExams(files) {
             const examFiles = document.getElementById("exam-files");
             examFiles.innerHTML = "";
             files.forEach(file => {
                 let item = document.createElement("li");
                 item.className = "exam-item";
-                item.innerHTML = `<button class="btn w-full" onclick="loadExam('${file.name}')">${file.name}</button>`;
+                item.innerHTML = `<button class="btn w-full" onclick="loadExam('${file}')">${file}</button>`;
                 examFiles.appendChild(item);
             });
         }
-
+    
         async function loadExam(fileName) {
             console.log(`📥 Loading: ${fileName}`);
             document.getElementById("exam-list").classList.add("hidden");
             document.getElementById("reload-btn").classList.add("hidden");
 
             try {
-                const response = await fetch(`${WORKER_URL}/${fileName}`);
-                questions = await response.json();
+                const response = await fetch(`${WORKER_URL}/fetch/${fileName}`);
+                const examData = await response.json();
+            
+                // Validate the JSON structure: it should be an array with valid question objects
+                if (
+                    !Array.isArray(examData) ||
+                    examData.length === 0 ||
+                    !examData[0].question ||
+                    !examData[0].choices ||
+                    examData[0].answer === undefined
+                ) {
+                    throw new Error("Invalid exam file format");
+                }
+            
+                questions = examData;
                 document.getElementById("question-container").classList.remove("hidden");
-
                 startTime = new Date();
                 showQuestion();
             } catch (error) {
-                alert("Error loading exam.");
+                alert("Error loading exam: " + error.message);
+                // Optionally, revert back to the exam list view
+                document.getElementById("exam-list").classList.remove("hidden");
+                document.getElementById("reload-btn").classList.remove("hidden");
             }
         }
 
+    
         function showQuestion() {
-    const questionContainer = document.getElementById("question-container");
-
-    // Apply fade animation
-    questionContainer.classList.add("fade-enter");
-
-    // Update background gradient smoothly
-    // generateRandomGradient();
-
-    setTimeout(() => {
-        questionContainer.classList.add("fade-enter-active");
-    }, 100);
-
-    document.getElementById("back-btn").classList.toggle("hidden", currentQuestion === 0);
-    document.getElementById("next-btn").classList.toggle("hidden", currentQuestion >= questions.length - 1);
-
-    let q = questions[currentQuestion];
-    document.getElementById("question").innerText = q.question;
-    let choicesDiv = document.getElementById("choices");
-    choicesDiv.innerHTML = "";
-
-    q.choices.forEach((choice, index) => {
-        let btn = document.createElement("button");
-        btn.className = "btn";
-        btn.innerText = choice;
-        btn.onclick = () => checkAnswer(index);
-        choicesDiv.appendChild(btn);
-    });
-
-    document.getElementById("progress").innerText = `Question ${currentQuestion + 1} of ${questions.length}`;
-
-    // Remove fade effect after transition completes
-    setTimeout(() => {
-        questionContainer.classList.remove("fade-enter", "fade-enter-active");
-    }, 400);
-}
-
-
-
-        function checkAnswer(selected) {
-            if (selected === questions[currentQuestion].answer) correctAnswers++;
-            currentQuestion++;
-            showQuestion();
+            const questionContainer = document.getElementById("question-container");
+    
+            // Apply fade animation
+            questionContainer.classList.add("fade-enter");
+            setTimeout(() => {
+                questionContainer.classList.add("fade-enter-active");
+            }, 100);
+    
+            document.getElementById("back-btn").classList.toggle("hidden", currentQuestion === 0);
+            document.getElementById("next-btn").classList.toggle("hidden", currentQuestion >= questions.length - 1);
+    
+            let q = questions[currentQuestion];
+            document.getElementById("question").innerText = q.question;
+            let choicesDiv = document.getElementById("choices");
+            choicesDiv.innerHTML = "";
+    
+            q.choices.forEach((choice, index) => {
+                let btn = document.createElement("button");
+                btn.className = "btn";
+                btn.innerText = choice;
+                btn.onclick = () => checkAnswer(index);
+                choicesDiv.appendChild(btn);
+            });
+    
+            document.getElementById("progress").innerText = `Question ${currentQuestion + 1} of ${questions.length}`;
+    
+            // Remove fade effect after transition completes
+            setTimeout(() => {
+                questionContainer.classList.remove("fade-enter", "fade-enter-active");
+            }, 400);
         }
-
+    
+        function checkAnswer(selected) {
+            let choicesDiv = document.getElementById("choices");
+            let buttons = choicesDiv.querySelectorAll("button");
+            let correctIndex = questions[currentQuestion].answer;
+    
+            if (selected === correctIndex) {
+                buttons[selected].style.background = "#1E5631"; // Dark green for correct
+                correctAnswers++;
+            } else {
+                buttons[selected].style.background = "#761515"; // Dark red for incorrect
+                buttons[correctIndex].style.background = "#1E5631"; // Correct answer in green
+            }
+    
+            // Disable all buttons after selection
+            buttons.forEach(btn => btn.disabled = true);
+    
+            // Move to the next question after a delay
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    endExam();
+                }
+            }, 300);
+        }
+    
         function prevQuestion() {
             if (currentQuestion > 0) {
                 currentQuestion--;
                 showQuestion();
             }
         }
-
+    
         function nextQuestion() {
-    if (currentQuestion < questions.length - 1) {
-        currentQuestion++;
-        showQuestion();
-    } else {
-        console.log("✅ Exam finished! Showing results...");
-        endExam();  // Ensure the results function is called
-    }
-}
-
-function endExam() {
-    console.log("🎉 Displaying results...");
-
-    let endTime = new Date();
-    let timeTaken = Math.round((endTime - startTime) / 1000);
-    let percentage = (correctAnswers / questions.length) * 100;
-
-    // Hide the question container and show the result
-    document.getElementById("question-container").classList.add("hidden");
-    document.getElementById("result").classList.remove("hidden");
-
-    // Insert result content with "Return to Home" button
-    document.getElementById("result").innerHTML = `
-        <div class="text-center">
-            <h2 class="text-2xl font-bold text-white mb-3">🎉 Exam Completed!</h2>
-            <p class="text-lg">✅ Correct Answers: <strong>${correctAnswers} / ${questions.length}</strong></p>
-            <p class="text-lg">🏆 Score: <strong>${percentage.toFixed(2)}%</strong></p>
-            <p class="text-lg">⏱️ Time Taken: <strong>${timeTaken} seconds</strong></p>
-
-            <button class="btn mt-4 w-full" onclick="restartExam()">🔄 Restart Exam</button>
-            <button class="btn mt-2 w-full bg-blue-600 hover:bg-blue-500" onclick="returnHome()">🏠 Return to Home</button>
-        </div>
-    `;
-}
-
-
-function checkAnswer(selected) {
-    let choicesDiv = document.getElementById("choices");
-    let buttons = choicesDiv.querySelectorAll("button");
-
-    // Get the correct answer index
-    let correctIndex = questions[currentQuestion].answer;
-
-    // Check if the selected answer is correct
-    if (selected === correctIndex) {
-        buttons[selected].style.background = "#1E5631"; // Dark green for correct
-        correctAnswers++;  // ✅ Increment the score
-    } else {
-        buttons[selected].style.background = "#761515"; // Dark red for incorrect
-        buttons[correctIndex].style.background = "#1E5631"; // Show the correct answer in green
-    }
-
-    // Disable all buttons after selection
-    buttons.forEach(btn => {
-        btn.disabled = true;
-    });
-
-    // Move to the next question after a delay
-    setTimeout(() => {
-        currentQuestion++;
-        if (currentQuestion < questions.length) {
-            showQuestion();
-        } else {
-            endExam();
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                console.log("✅ Exam finished! Showing results...");
+                endExam();
+            }
         }
-    }, 300);
-}
-
-
-
-function restartExam() {
-    console.log("🔄 Restarting exam...");
-
-    // Reset variables
-    currentQuestion = 0;
-    correctAnswers = 0;
-    startTime = new Date();  // Restart timer
-
-    // Hide result and show question container again
-    document.getElementById("result").classList.add("hidden");
-    document.getElementById("question-container").classList.remove("hidden");
-
-    // Reload the first question
-    showQuestion();
-}
-
-function returnHome() {
-    console.log("🏠 Returning to home page...");
-    generateRandomGradient();
     
-    currentQuestion = 0;
-    correctAnswers = 0;
+        function endExam() {
+            console.log("🎉 Displaying results...");
     
-    // Hide result and show available exams
-    document.getElementById("result").classList.add("hidden");
-    document.getElementById("exam-list").classList.remove("hidden");
-    document.getElementById("reload-btn").classList.remove("hidden");
-}
-
-
-
-
+            let endTime = new Date();
+            let timeTaken = Math.round((endTime - startTime) / 1000);
+            let percentage = (correctAnswers / questions.length) * 100;
+    
+            document.getElementById("question-container").classList.add("hidden");
+            document.getElementById("result").classList.remove("hidden");
+    
+            document.getElementById("result").innerHTML = `
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold text-white mb-3">🎉 Exam Completed!</h2>
+                    <p class="text-lg">✅ Correct Answers: <strong>${correctAnswers} / ${questions.length}</strong></p>
+                    <p class="text-lg">🏆 Score: <strong>${percentage.toFixed(2)}%</strong></p>
+                    <p class="text-lg">⏱️ Time Taken: <strong>${timeTaken} seconds</strong></p>
+                    <button class="btn mt-4 w-full" onclick="restartExam()">🔄 Restart Exam</button>
+                    <button class="btn mt-2 w-full bg-blue-600 hover:bg-blue-500" onclick="returnHome()">🏠 Return to Home</button>
+                </div>
+            `;
+        }
+    
+        function restartExam() {
+            console.log("🔄 Restarting exam...");
+            currentQuestion = 0;
+            correctAnswers = 0;
+            startTime = new Date();
+            document.getElementById("result").classList.add("hidden");
+            document.getElementById("question-container").classList.remove("hidden");
+            showQuestion();
+        }
+    
+        function returnHome() {
+            console.log("🏠 Returning to home page...");
+            currentQuestion = 0;
+            correctAnswers = 0;
+            document.getElementById("result").classList.add("hidden");
+            document.getElementById("exam-list").classList.remove("hidden");
+            document.getElementById("reload-btn").classList.remove("hidden");
+        }
+    
         // Auto-load exams when page loads
         authenticate();
-
+    
         function generateRandomGradient() {
-    const gradients = [
-        ["#2E2B40", "#5B5170"],  // Soft Violet-Gray
-        ["#25233A", "#4A4458"],  // Dark Blue-Purple
-        ["#1C1A2E", "#6C5B90"],  // Deep Indigo
-        ["#29293D", "#50526E"],  // Midnight Gray-Blue
-        ["#21212F", "#474D7A"],  // Soft Dark Blue
-        ["#2A2B3F", "#5F5985"],  // Subtle Purple-Grey
-        ["#22232A", "#41445C"]   // Classic Dark Mode Gray
-    ];
-
-    // Pick a random gradient
-    const selectedGradient = gradients[Math.floor(Math.random() * gradients.length)];
-
-    // If page is reloading (first load), apply gradient immediately
-    if (!document.body.style.background) {
-        document.body.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
-        return;
-    }
-
-    // Create a temporary overlay div for fading effect
-    let overlay = document.createElement("div");
-    overlay.style.position = "fixed";
-    overlay.style.top = "0";
-    overlay.style.left = "0";
-    overlay.style.width = "100%";
-    overlay.style.height = "100%";
-    overlay.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
-    overlay.style.opacity = "0";
-    overlay.style.transition = "opacity 2s ease-in-out";
-    overlay.style.zIndex = "-1";
-
-    // Append overlay and fade it in
-    document.body.appendChild(overlay);
-    setTimeout(() => {
-        overlay.style.opacity = "1";
-    }, 50);
-
-    // After transition completes, remove the overlay and apply the new gradient
-    setTimeout(() => {
-        document.body.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
-        document.body.removeChild(overlay);
-    }, 2000);
-
-    // Apply smooth transition to buttons as well
-    let buttons = document.querySelectorAll(".btn, .nav-btn");
-    buttons.forEach(btn => {
-        btn.style.transition = "background 2s ease-in-out, opacity 2s ease-in-out";
-        btn.style.background = `linear-gradient(90deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
-        btn.style.opacity = "0"; // Start with fade effect
-        setTimeout(() => {
-            btn.style.opacity = "1"; // Fade back in smoothly
-        }, 500);
-    });
-
-    // 🌟 Apply smooth fade-in to Exam List Items & Choices 🌟
-    let examItems = document.querySelectorAll("#exam-files li, #choices button");
-    examItems.forEach((item) => {
-        item.style.transition = "background 2s ease-in-out, opacity 2s ease-in-out";
-        item.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
-        item.style.opacity = "0"; // Fade out
-        setTimeout(() => {
-            item.style.opacity = "1"; // Fade back in smoothly
-        }, 500);
-    });
-}
-
-
-// 🌟 Run on page load with a random gradient
-window.onload = generateRandomGradient;
-
-// 🌟 Automatically change the gradient every 120 seconds (2 minutes)
-setInterval(generateRandomGradient, 120000);
-
-// 🔄 Run it once when the page loads
-window.onload = generateRandomGradient;
-
+            const gradients = [
+                ["#2E2B40", "#5B5170"],
+                ["#25233A", "#4A4458"],
+                ["#1C1A2E", "#6C5B90"],
+                ["#29293D", "#50526E"],
+                ["#21212F", "#474D7A"],
+                ["#2A2B3F", "#5F5985"],
+                ["#22232A", "#41445C"]
+            ];
+    
+            const selectedGradient = gradients[Math.floor(Math.random() * gradients.length)];
+    
+            if (!document.body.style.background) {
+                document.body.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+                return;
+            }
+    
+            let overlay = document.createElement("div");
+            overlay.style.position = "fixed";
+            overlay.style.top = "0";
+            overlay.style.left = "0";
+            overlay.style.width = "100%";
+            overlay.style.height = "100%";
+            overlay.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+            overlay.style.opacity = "0";
+            overlay.style.transition = "opacity 2s ease-in-out";
+            overlay.style.zIndex = "-1";
+    
+            document.body.appendChild(overlay);
+            setTimeout(() => {
+                overlay.style.opacity = "1";
+            }, 50);
+    
+            setTimeout(() => {
+                document.body.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+                document.body.removeChild(overlay);
+            }, 2000);
+    
+            let buttons = document.querySelectorAll(".btn, .nav-btn");
+            buttons.forEach(btn => {
+                btn.style.transition = "background 2s ease-in-out, opacity 2s ease-in-out";
+                btn.style.background = `linear-gradient(90deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+                btn.style.opacity = "0";
+                setTimeout(() => {
+                    btn.style.opacity = "1";
+                }, 500);
+            });
+    
+            let examItems = document.querySelectorAll("#exam-files li, #choices button");
+            examItems.forEach((item) => {
+                item.style.transition = "background 2s ease-in-out, opacity 2s ease-in-out";
+                item.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+                item.style.opacity = "0";
+                setTimeout(() => {
+                    item.style.opacity = "1";
+                }, 500);
+            });
+        }
+    
+        window.onload = generateRandomGradient;
+        setInterval(generateRandomGradient, 120000);
+        window.onload = generateRandomGradient;
     </script>
+    
 </body>
 </html>

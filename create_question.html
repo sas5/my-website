@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create & Upload Questions</title>
+    <style>
+       /* 🌌 Soft Gray-Violet Gradient Background */
+/* 🌌 Soft Gray-Violet Gradient Background */
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #22232A, #2E2B40);
+    color: white;
+    text-align: left;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    transition: background 2s ease-in-out;
+}
+
+/* 📦 Modern Glassy Card */
+.card {
+    background: rgba(30, 30, 40, 0.85);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(110, 90, 150, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 📜 Input & Textarea Styling (Proper margins, equal width) */
+label {
+    display: block;
+    font-weight: 500;
+    margin-top: 12px;
+    margin-bottom: 10px;
+    margin-left: 2px;
+}
+
+textarea, select, input {
+    width: calc(100% - 20px); /* Ensures padding doesn't break alignment */
+    min-height: 40px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+    margin-bottom: 10px; /* Adds spacing between elements */
+}
+
+/* Proper textarea fitting */
+textarea {
+    min-height: 50px;
+    max-height: 150px;
+    resize: vertical;
+    overflow-y: auto;
+}
+
+/* 🔻 Fix Select Dropdown Visibility */
+select {
+    width: 100%;
+    background: rgba(50, 50, 60, 0.9);
+    color: white;
+    cursor: pointer;
+
+}
+
+select option {
+    background: rgba(50, 50, 60, 0.9);
+    color: white;
+}
+
+/* 🟣 Buttons */
+.btn {
+    background: linear-gradient(90deg, #6C5B90, #8A7CA8);
+    border: none;
+    padding: 14px 18px;
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.btn:hover {
+    box-shadow: 0 5px 12px rgba(198, 193, 206, 0.443);
+}
+
+/* 🔄 Navigation Buttons (Now Visible) */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.nav-btn {
+    width: 48%;
+    text-align: center;
+    padding: 14px 0;
+    font-weight: 500;
+    background: linear-gradient(90deg, #6C5B90, #8A7CA8);
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+    background: linear-gradient(90deg, #5A5375, #6C5B90);
+}
+
+/* 🔹 Enlarged File Name Input */
+#fileName {
+    width: calc(100% - 20px);
+    font-size: 16px;
+    padding: 10px;
+    margin-top: 8px;
+}
+
+/* 📜 Separate Card for JSON Output */
+.output-card {
+    background: rgba(30, 30, 40, 0.85);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 30px rgba(110, 90, 150, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    margin-top: 20px;
+}
+
+/* 📜 JSON Output Styling */
+.output {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-family: monospace;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.home-btn {
+    display: inline-block;
+    text-decoration: none;
+    background: linear-gradient(90deg, #5A5375, #6C5B90);
+    color: white;
+    padding: 12px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.home-btn:hover {
+    background: linear-gradient(90deg, #8A7CA8, #A095C3);
+    box-shadow: 0 5px 12px rgba(198, 193, 206, 0.443);
+}
+    </style>
+</head>
+<body>
+
+<!-- Main Question Form -->
+<a href="/" class="home-btn">🏠 Home</a>
+
+<div class="card">
+
+    <h2>Create Questions</h2>
+
+    <label>Question:</label>
+    <textarea id="question" placeholder="Enter the question"></textarea>
+
+    <label>Choice 1:</label>
+    <textarea id="choice1" placeholder="Enter choice 1"></textarea>
+    
+    <label>Choice 2:</label>
+    <textarea id="choice2" placeholder="Enter choice 2"></textarea>
+    
+    <label>Choice 3:</label>
+    <textarea id="choice3" placeholder="Enter choice 3"></textarea>
+    
+    <label>Choice 4:</label>
+    <textarea id="choice4" placeholder="Enter choice 4"></textarea>
+    
+    <label>Choice 5:</label>
+    <textarea id="choice5" placeholder="Enter choice 5"></textarea>
+    
+    <label>Correct Answer (Select 1-5):</label>
+    <select id="correctAnswer">
+        <option value="0">Choice 1</option>
+        <option value="1">Choice 2</option>
+        <option value="2">Choice 3</option>
+        <option value="3">Choice 4</option>
+        <option value="4">Choice 5</option> <!-- New Option -->
+    </select>
+    
+
+    <div class="button-group">
+        <button class="nav-btn" onclick="previousQuestion()">⬅️ Back</button>
+        <button class="nav-btn" onclick="nextQuestion()">Next ➡️</button>
+    </div>
+
+    <label>File Name:</label>
+    <input type="text" id="fileName" placeholder="Enter file name (e.g., quiz1.json)">
+
+    <button class="btn" onclick="uploadFile()">Upload to OneDrive</button>
+    <button class="btn" onclick="generateJSON()">Generate JSON</button>
+    
+    <h3>Upload Status:</h3>
+    <div class="output" id="uploadStatus"></div>
+
+</div>
+
+<!-- 🔹 New Card for JSON Output -->
+<div class="output-card">
+    <h3>Generated JSON:</h3>
+    <div class="output" id="output"></div>
+
+</div>
+
+<!-- Generate JSON Button is Outside -->
+
+    <script>
+        const WORKER_URL = "https://wandering-fog-6b72.apppps505.workers.dev";
+
+        let questions = [];
+        let currentIndex = 0;
+
+        function saveCurrentQuestion() {
+            const question = document.getElementById("question").value;
+            const choices = [
+                document.getElementById("choice1").value,
+                document.getElementById("choice2").value,
+                document.getElementById("choice3").value,
+                document.getElementById("choice4").value,
+                document.getElementById("choice5").value
+            ];
+            const correctAnswer = parseInt(document.getElementById("correctAnswer").value);
+
+            if (!question || choices.includes("")) {
+                return;
+            }
+
+            questions[currentIndex] = {
+                "question": question,
+                "choices": choices,
+                "answer": correctAnswer
+            };
+        }
+
+        function loadQuestion(index) {
+            if (questions[index]) {
+                document.getElementById("question").value = questions[index].question;
+                document.getElementById("choice1").value = questions[index].choices[0];
+                document.getElementById("choice2").value = questions[index].choices[1];
+                document.getElementById("choice3").value = questions[index].choices[2];
+                document.getElementById("choice4").value = questions[index].choices[3];
+                document.getElementById("choice5").value = questions[index].choices[4];
+                document.getElementById("correctAnswer").value = questions[index].answer;
+            } else {
+                document.getElementById("question").value = "";
+                document.getElementById("choice1").value = "";
+                document.getElementById("choice2").value = "";
+                document.getElementById("choice3").value = "";
+                document.getElementById("choice4").value = "";
+                document.getElementById("choice5").value = "";
+                document.getElementById("correctAnswer").value = "0";
+            }
+        }
+
+        function nextQuestion() {
+            saveCurrentQuestion();
+            currentIndex++;
+            loadQuestion(currentIndex);
+        }
+
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                saveCurrentQuestion();
+                currentIndex--;
+                loadQuestion(currentIndex);
+            }
+        }
+
+        function generateJSON() {
+            saveCurrentQuestion();
+
+            if (questions.length === 0) {
+                alert("No questions added!");
+                return;
+            }
+        
+            // Generate a properly formatted JSON
+            const formattedJSON = JSON.stringify(questions, null, 4);
+
+            // Display in the output div
+            document.getElementById("output").textContent = formattedJSON;
+        }
+
+        async function uploadFile() {
+            generateJSON(); // Auto-generate JSON before sending
+
+            const fileName = document.getElementById("fileName").value.trim();
+            if (!fileName) {
+                alert("Please enter a file name!");
+                return;
+            }
+        
+            const jsonData = document.getElementById("output").textContent;
+            if (!jsonData) {
+                alert("No JSON data found!");
+                return;
+            }
+        
+            document.getElementById("uploadStatus").innerHTML = "⏳ Uploading...";
+        
+            try {
+                const uploadUrl = `${WORKER_URL}/upload?filename=${encodeURIComponent(fileName)}.json`;
+            
+                const response = await fetch(uploadUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: jsonData
+                });
+            
+                const result = await response.json();
+                document.getElementById("uploadStatus").innerHTML = result.success
+                    ? "✅ File uploaded successfully!"
+                    : `❌ Error: ${result.message}`;
+            } catch (error) {
+                document.getElementById("uploadStatus").innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+
+        document.querySelectorAll("textarea").forEach(textarea => {
+            textarea.addEventListener("input", function () {
+                this.style.height = "auto"; // Reset height to auto
+                this.style.height = this.scrollHeight + "px"; // Set height based on content
+            });
+        });
+
+        function generateRandomGradient() {
+            const gradients = [
+                ["#2E2B40", "#5B5170"],
+                ["#25233A", "#4A4458"],
+                ["#1C1A2E", "#6C5B90"],
+                ["#29293D", "#50526E"],
+                ["#21212F", "#474D7A"],
+                ["#2A2B3F", "#5F5985"],
+                ["#22232A", "#41445C"]
+            ];
+
+            const selectedGradient = gradients[Math.floor(Math.random() * gradients.length)];
+
+            document.body.style.background = `linear-gradient(135deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+
+            let buttons = document.querySelectorAll(".btn, .nav-btn");
+            buttons.forEach(btn => {
+                btn.style.background = `linear-gradient(90deg, ${selectedGradient[0]}, ${selectedGradient[1]})`;
+            });
+        }
+
+        window.onload = generateRandomGradient;
+        setInterval(generateRandomGradient, 120000);
+    </script>
+
+</body>
+</html>
